@@ -1,12 +1,6 @@
 package initialization
 
-import (
-	"context"
-
-	"github.com/go-xorm/xorm"
-)
-
-type InitFunc func(ctx context.Context, engine *xorm.Engine) error
+type InitFunc func() (Service, error)
 
 var initFuncs = []InitFunc{}
 

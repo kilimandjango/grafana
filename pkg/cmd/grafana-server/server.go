@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/grafana/grafana/pkg/services/dashboards"
+
 	"github.com/grafana/grafana/pkg/initialization"
 	"github.com/grafana/grafana/pkg/services/provisioning"
 
@@ -97,12 +99,27 @@ func (g *GrafanaServerImpl) Start() error {
 	}
 
 	for _, fn := range initialization.GetAllInitFuncs() {
-		g.childRoutines.Go(func() error { return fn(g.context, engine) })
+		g.childRoutines.Go(func() error {
+			extension, err := fn()
+			if err != nil {
+				return err
+			}
+			extension.Init(g.context, engine, setting.Cfg)
+			registerServices(extension)
+			return extension.Run()
+		})
 	}
 
 	sendSystemdNotification("READY=1")
 
 	return g.startHttpServer()
+}
+
+func registerServices(s initialization.Service) {
+	dps, ok := s.(initialization.SetDashboardProvisioningService)
+	if ok {
+		dps.SetDashboardProvisioningService(dashboards.NewProvisioningService())
+	}
 }
 
 func (g *GrafanaServerImpl) initLogging() {
