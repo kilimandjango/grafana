@@ -76,7 +76,7 @@ export class PrometheusDatasource {
 
     if (this.basicAuth) {
       options.headers = {
-        Authorization: this.basicAuth,
+        "Authorization": this.basicAuth
       };
     }
  
