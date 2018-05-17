@@ -17,6 +17,7 @@ export class ElasticDatasource {
   maxConcurrentShardRequests: number;
   queryBuilder: ElasticQueryBuilder;
   indexPattern: IndexPattern;
+  token: any;
 
   /** @ngInject */
   constructor(instanceSettings, private $q, private backendSrv, private templateSrv, private timeSrv) {
@@ -30,6 +31,7 @@ export class ElasticDatasource {
     this.indexPattern = new IndexPattern(instanceSettings.index, instanceSettings.jsonData.interval);
     this.interval = instanceSettings.jsonData.timeInterval;
     this.maxConcurrentShardRequests = instanceSettings.jsonData.maxConcurrentShardRequests;
+    this.token = instanceSettings.jsonData.token;
     this.queryBuilder = new ElasticQueryBuilder({
       timeField: this.timeField,
       esVersion: this.esVersion,
@@ -50,6 +52,12 @@ export class ElasticDatasource {
       options.headers = {
         Authorization: this.basicAuth,
       };
+    }
+
+        if (this.token) {
+          options.headers = {
+            "Authorization": 'Bearer ' + this.token
+          };
     }
 
     return this.backendSrv.datasourceRequest(options);
